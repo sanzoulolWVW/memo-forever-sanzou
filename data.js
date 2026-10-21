@@ -28,8 +28,6 @@ const BUFFS = [
  ['bag','Sleeping Bag',120],
  ['food','Nourriture',15],
  ['tent','Campement',60],
- ['elixir','Élixir / potion',60],
- ['weapon','Huile / pierre / poison',30],
  ['custom','Rappel personnel',10]
 ];
 const OVERVIEW_GUIDE = 'https://www.wowhead.com/forever/guide/dungeons-overview-locations-details';

@@ -3,34 +3,121 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const link = (url,label) => `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`;
 const search = q => 'https://www.wowhead.com/forever/search?q='+encodeURIComponent(q);
+const textAnchor = text => '#:~:text='+encodeURIComponent(text).replace(/'/g,'%27').replace(/-/g,'%2D');
 const KEY='sanzou-memo-v2';
-let state={checks:{},timers:{},sound:false};
-try {const x=JSON.parse(localStorage.getItem(KEY));if(x && typeof x==='object' && !Array.isArray(x)) {state.sound=x.sound===true;for(const part of ['checks','timers'])if(x[part]&&typeof x[part]==='object'&&!Array.isArray(x[part]))state[part]=x[part];}} catch {}
+let state={checks:{},timers:{},sound:false,volume:40};
+try {
+ const x=JSON.parse(localStorage.getItem(KEY));
+ if(x && typeof x==='object' && !Array.isArray(x)) {
+  state.sound=x.sound===true;
+  if(Number.isFinite(x.volume))state.volume=Math.max(0,Math.min(100,x.volume));
+  for(const part of ['checks','timers'])if(x[part]&&typeof x[part]==='object'&&!Array.isArray(x[part]))state[part]=x[part];
+ }
+} catch {}
+// Keep checks and retained timers from v2, discard obsolete reminders.
+state.timers=Object.fromEntries(BUFFS.filter(([id])=>Object.hasOwn(state.timers,id)).map(([id])=>[id,state.timers[id]]));
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch{$('#storage-warning').hidden=false;}}
-let audio;
-function unlockAudio(){try{audio??=new (window.AudioContext||window.webkitAudioContext)();if(audio.state==='suspended')audio.resume().catch(()=>{});}catch{}}
-function chime(){if(!audio)return;try{const osc=audio.createOscillator(),gain=audio.createGain();osc.connect(gain);gain.connect(audio.destination);osc.type='sine';osc.frequency.value=660;gain.gain.setValueAtTime(.055,audio.currentTime);gain.gain.exponentialRampToValueAtTime(.001,audio.currentTime+.7);osc.start();osc.stop(audio.currentTime+.7);}catch{}}
-function notice(message){const box=document.createElement('div');box.className='notice';const text=document.createElement('span');text.textContent=message;const close=document.createElement('button');close.textContent='×';close.setAttribute('aria-label','Fermer cette alerte');close.onclick=()=>box.remove();box.append(text,close);$('#alerts').append(box);}
-function announce(name){notice(name+' : timer terminé.');if(state.sound)chime();if('Notification' in window && Notification.permission==='granted'){try{new Notification('MEMO FOREVER SANZOU',{body:name+' : timer terminé.',tag:name});}catch{}}}
+let audio, activeTone;
+async function unlockAudio(){try{audio??=new (window.AudioContext||window.webkitAudioContext)();if(audio.state==='suspended')await audio.resume();return audio.state==='running';}catch{return false;}}
+function stopTone(){if(activeTone){try{activeTone.stop();}catch{}activeTone=null;}}
+function chime(){
+ stopTone();
+ if(!audio || audio.state!=='running' || state.volume===0)return;
+ try{
+  const osc=audio.createOscillator(),gain=audio.createGain(),now=audio.currentTime;
+  osc.connect(gain);gain.connect(audio.destination);osc.type='sine';osc.frequency.setValueAtTime(660,now);osc.frequency.setValueAtTime(880,now+.24);
+  const peak=.14*(state.volume/100)**2;
+  gain.gain.setValueAtTime(0,now);gain.gain.linearRampToValueAtTime(peak,now+.025);gain.gain.exponentialRampToValueAtTime(.0001,now+.65);
+  activeTone=osc;osc.onended=()=>{osc.disconnect();gain.disconnect();if(activeTone===osc)activeTone=null;};osc.start();osc.stop(now+.7);
+ }catch{}
+}
+const notices=new Map();
+function notice(message,key='info'){
+ let item=notices.get(key);
+ if(!item){
+  const box=document.createElement('div'),text=document.createElement('span'),close=document.createElement('button');
+  box.className='notice';box.dataset.notice=key;close.textContent='×';close.setAttribute('aria-label','Fermer cette alerte');
+  close.onclick=()=>{box.remove();notices.delete(key);};box.append(text,close);$('#alerts').append(box);item={box,text};notices.set(key,item);
+ }
+ item.text.textContent=message;
+}
+function announce(id,name){
+ notice(name+' : timer terminé.','timer-'+id);
+ if(state.sound)chime();
+ if('Notification' in window && Notification.permission==='granted'){
+  // Native notifications are silent: the volume slider controls the page chime.
+  try{new Notification('MEMO FOREVER SANZOU',{body:name+' : timer terminé.',tag:'timer-'+id,silent:true});}catch{}
+ }
+}
 $('#sound').checked=state.sound;
-$('#sound').onchange=e=>{state.sound=e.target.checked;if(state.sound)unlockAudio();save();};
-$('#test-alert').onclick=()=>{unlockAudio();chime();notice('Test sonore lancé. Vérifie que cet onglet n’est pas muet.');};
-$('#notifications').onclick=async()=>{if(!('Notification' in window)){notice('Les notifications ne sont pas disponibles ici. Les alertes dans la page restent actives.');return;}try{const p=await Notification.requestPermission();notice(p==='granted'?'Notifications activées tant que la page reste ouverte.':'Notifications non autorisées. Les alertes dans la page restent actives.');}catch{notice('Notifications indisponibles dans ce navigateur.');}};
+$('#sound').onchange=async e=>{state.sound=e.target.checked;if(state.sound)await unlockAudio();else stopTone();save();};
+function updateVolume(){
+ $('#volume').value=state.volume;$('#volume-value').textContent=state.volume+' %';
+ $('#volume').setAttribute('aria-valuetext',state.volume+' %');
+}
+updateVolume();
+$('#volume').oninput=e=>{state.volume=Number(e.target.value);stopTone();updateVolume();save();};
+$('#test-alert').onclick=async()=>{const ready=await unlockAudio();chime();notice(!ready?'Le son n’est pas disponible dans ce navigateur.':state.volume===0?'Son coupé · volume à 0 %.':'Test sonore · volume '+state.volume+' %.','sound-test');};
+$('#notifications').onclick=async()=>{
+ if(!('Notification' in window)){notice('Notifications indisponibles ici. Les alertes restent visibles dans la page.','notifications');return;}
+ try{const p=await Notification.requestPermission();notice(p==='granted'?'Notifications activées. Garde la page ouverte.':'Notifications non autorisées. Les alertes restent visibles dans la page.','notifications');}catch{notice('Notifications indisponibles dans ce navigateur.','notifications');}
+};
 const timerElements=new Map();
-function getTimer(id,minutes){const t=state.timers[id];if(!t || typeof t!=='object' || !['idle','running','paused','expired'].includes(t.status) || !Number.isFinite(t.duration)||t.duration<1000||t.duration>86400000 || (t.status==='running'&&!Number.isFinite(t.end)) || (t.status==='paused'&&(!Number.isFinite(t.remaining)||t.remaining<0))){state.timers[id]={status:'idle',duration:minutes*60000,remaining:minutes*60000};}return state.timers[id];}
+function getTimer(id,minutes){
+ const t=state.timers[id];
+ if(!t || typeof t!=='object' || !['idle','running','paused','expired'].includes(t.status) || !Number.isFinite(t.duration)||t.duration<1000||t.duration>86400000 || !Number.isFinite(t.remaining)||t.remaining<0 || (t.status==='running'&&!Number.isFinite(t.end))){state.timers[id]={status:'idle',duration:minutes*60000,remaining:minutes*60000};}
+ return state.timers[id];
+}
 function remaining(t,now=Date.now()){return t.status==='running'?Math.max(0,t.end-now):t.status==='expired'?0:t.remaining;}
 function format(ms){let s=Math.ceil(ms/1000);return [Math.floor(s/3600),Math.floor(s%3600/60),s%60].map(n=>String(n).padStart(2,'0')).join(':');}
-for(const [id,name,minutes,description] of BUFFS){const t=getTimer(id,minutes);const card=document.createElement('article');card.className='timer';card.innerHTML=`<h3>${esc(name)}</h3><p>${esc(description)}</p><output class="clock" aria-label="Temps restant pour ${esc(name)}"></output><progress max="1" value="1" aria-label="Progression de ${esc(name)}"></progress><label for="minutes-${id}">Durée <input id="minutes-${id}" type="number" min="0.0166666667" max="1440" step="any" value="${t.duration/60000}"> min</label><div class="timer-controls"><button class="start">Démarrer</button><button class="pause">Pause</button><button class="reset">Réinitialiser</button></div>`;$('#timer-grid').append(card);const els={card,out:card.querySelector('output'),bar:card.querySelector('progress'),input:card.querySelector('input'),start:card.querySelector('.start'),pause:card.querySelector('.pause')};timerElements.set(id,els);
-// An absolute deadline survives tab throttling and reloads without accumulating drift.
- els.start.onclick=()=>{const current=state.timers[id];unlockAudio();if(current.status==='paused'){current.end=Date.now()+current.remaining;current.status='running';}else {const min=Number(els.input.value);if(!Number.isFinite(min)||min<1/60||min>1440){notice('Choisis une durée entre 1 seconde et 1 440 minutes.');els.input.focus();return;}current.duration=min*60000;current.remaining=current.duration;current.end=Date.now()+current.duration;current.status='running';}save();tick();};
- els.pause.onclick=()=>{const current=state.timers[id];if(current.status==='running'){current.remaining=remaining(current);current.status=current.remaining>0?'paused':'expired';save();tick();}};
- card.querySelector('.reset').onclick=()=>{const current=state.timers[id];current.status='idle';current.remaining=current.duration;delete current.end;save();tick();};
- els.input.onchange=()=>{const current=state.timers[id],n=Number(els.input.value);if(current.status==='idle'&&Number.isFinite(n)&&n>=1/60&&n<=1440){current.duration=n*60000;current.remaining=current.duration;save();tick();}};
+for(const [id,name,minutes] of BUFFS){
+ const t=getTimer(id,minutes),row=document.createElement('div');row.className='timer';row.dataset.timer=id;
+ row.innerHTML=`<span class="timer-name" id="name-${id}">${esc(name)}</span><label class="duration" for="minutes-${id}"><span class="sr-only">Durée de ${esc(name)}</span><input id="minutes-${id}" type="number" min="0.016666666666666666" max="1440" step="any" value="${t.duration/60000}"> <span>min</span></label><div class="timer-time"><span class="clock" aria-label="Temps restant pour ${esc(name)}"></span><progress max="1" value="1" aria-label="Progression de ${esc(name)}"></progress></div><div class="timer-controls"><button class="start">Démarrer</button><button class="pause">Pause</button><button class="reset" aria-label="Réinitialiser ${esc(name)}" title="Réinitialiser">↺</button></div>`;
+ $('#timer-list').append(row);
+ const els={row,out:row.querySelector('.clock'),bar:row.querySelector('progress'),input:row.querySelector('input'),start:row.querySelector('.start'),pause:row.querySelector('.pause')};timerElements.set(id,els);
+ els.start.onclick=()=>{
+  const current=state.timers[id];unlockAudio();
+  if(current.status==='paused'){current.end=Date.now()+current.remaining;current.status='running';}
+  else{
+   const min=Number(els.input.value);
+   if(!Number.isFinite(min)||min<1/60||min>1440){notice('Durée : entre 1 seconde et 1 440 minutes.','duration');els.input.focus();return;}
+   current.duration=min*60000;current.remaining=current.duration;current.end=Date.now()+current.duration;current.status='running';
+  }
+  const previous=notices.get('timer-'+id);if(previous){previous.box.remove();notices.delete('timer-'+id);}
+  save();tick();
+ };
+ els.pause.onclick=()=>{const current=state.timers[id];if(current.status==='running'){current.remaining=remaining(current);current.status=current.remaining>0?'paused':'expired';if(current.status==='expired')announce(id,name);save();tick();}};
+ row.querySelector('.reset').onclick=()=>{const current=state.timers[id];current.status='idle';current.remaining=current.duration;delete current.end;save();tick();};
+ els.input.onchange=()=>{const current=state.timers[id],n=Number(els.input.value);if(['idle','expired'].includes(current.status)&&Number.isFinite(n)&&n>=1/60&&n<=1440){current.duration=n*60000;if(current.status==='idle')current.remaining=current.duration;save();tick();}};
 }
-function tick(){let active=0,dirty=false;const expired=[];for(const [id,name] of BUFFS){const t=state.timers[id],el=timerElements.get(id);if(t.status==='running'&&t.end<=Date.now()){t.status='expired';t.remaining=0;dirty=true;expired.push(name);}if(t.status==='running')active++;const ms=remaining(t);el.out.textContent=t.status==='expired'?'Terminé':format(ms)+(t.status==='paused'?' · pause':'');el.bar.value=Math.max(0,Math.min(1,ms/t.duration));el.card.className='timer '+t.status;el.pause.disabled=t.status!=='running';el.start.disabled=t.status==='running';el.start.textContent=t.status==='paused'?'Reprendre':t.status==='expired'?'Relancer':'Démarrer';el.input.disabled=t.status==='running'||t.status==='paused';}if(dirty)save();expired.forEach(announce);$('#active-count').textContent=active?`${active} timer${active>1?'s':''} en cours`:'Aucun timer en cours';}
+function tick(){
+ let active=0,dirty=false;const expired=[];
+ for(const [id,name] of BUFFS){
+  const t=state.timers[id],el=timerElements.get(id);
+  if(t.status==='running'&&t.end<=Date.now()){t.status='expired';t.remaining=0;dirty=true;expired.push([id,name]);}
+  if(t.status==='running')active++;
+  const ms=remaining(t);el.out.textContent=t.status==='expired'?'Terminé':format(ms)+(t.status==='paused'?' · pause':'');
+  el.bar.value=Math.max(0,Math.min(1,ms/t.duration));el.row.className='timer '+t.status;
+  el.pause.disabled=t.status!=='running';el.start.disabled=t.status==='running';el.start.textContent=t.status==='paused'?'Reprendre':t.status==='expired'?'Relancer':'Démarrer';el.input.disabled=t.status==='running'||t.status==='paused';
+ }
+ if(dirty)save();expired.forEach(([id,name])=>announce(id,name));$('#active-count').textContent=active?`${active} timer${active>1?'s':''} en cours`:'Aucun timer en cours';
+}
 setInterval(tick,500);document.addEventListener('visibilitychange',tick);
 const normalize=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-function drawTable(kind,data){const q=normalize($('#'+kind+'-search').value),n=Number($('#'+kind+'-level').value);const rows=data.filter(x=>(!q||normalize(x.join(' ')).includes(q))&&(!n||(x[1]!==null&&x[1]<=n&&x[2]>=n))&&(kind!=='zone'||$('#horde').checked||!x[5].startsWith('Horde')));$('#'+kind+'-count').textContent=`${rows.length} / ${data.length} entrées`;$('#'+kind+'-rows').innerHTML=rows.length?rows.map(x=>{const base=x[4]?'https://www.wowhead.com/classic/zone='+x[4]:search(x[3]);return `<tr><td class="level">${x[1]===null?'—':x[1]===x[2]?x[1]:x[1]+'–'+x[2]}</td><td><strong>${esc(x[0])}</strong>${!x[4]?'<small>Forever</small>':''}</td><td>${esc(x[5])}</td><td>${link(base,x[4]?'Carte ↗':'Recherche lieu ↗')} ${link(x[4]?base+'#quests':search(x[3]+' quests'),x[4]?'Quêtes ↗':'Recherche quêtes ↗')}</td></tr>`;}).join(''):'<tr><td colspan="4">Aucun résultat. Efface le nom ou le niveau pour revoir la liste.</td></tr>';}
+function drawTable(kind,data){
+ const q=normalize($('#'+kind+'-search').value),n=Number($('#'+kind+'-level').value);
+ const rows=data.filter(x=>(!q||normalize(x.join(' ')).includes(q))&&(!n||(x[1]!==null&&x[1]<=n&&x[2]>=n))&&(kind!=='zone'||$('#horde').checked||!x[5].startsWith('Horde')));
+ $('#'+kind+'-count').textContent=`${rows.length} / ${data.length}`;
+ $('#'+kind+'-rows').innerHTML=rows.length?rows.map(x=>{
+  const base=x[4]?'https://www.wowhead.com/classic/zone='+x[4]:search(x[3]);
+  let links=link(base,'Lien Wowhead ↗');
+  if(kind==='dungeon'){
+   const guide=DUNGEON_GUIDES[x[3]];
+   links=guide?(guide.url?link(guide.url,'Guide Wowhead ↗')+' '+link(guide.url+textAnchor(guide.quests),'Quêtes ↗'):link(OVERVIEW_GUIDE+textAnchor(guide.heading),'Aperçu Wowhead ↗')):link(base,'Lien Wowhead ↗')+' '+link(base+'#quests','Quêtes ↗');
+  }
+  return `<tr><td class="level">${x[1]===null?'—':x[1]===x[2]?x[1]:x[1]+'–'+x[2]}</td><td>${esc(x[0])}</td><td>${links}</td></tr>`;
+ }).join(''):'<tr><td colspan="3">Aucun résultat.</td></tr>';
+}
 for(const [kind,data] of [['zone',ZONES],['dungeon',DUNGEONS]]){for(const suffix of ['search','level'])$('#'+kind+'-'+suffix).oninput=()=>drawTable(kind,data);drawTable(kind,data);}$('#horde').onchange=()=>drawTable('zone',ZONES);
 const tasks=[
  ['sleeping-bag','Niv. 14 · Obtenir le Cozy Sleeping Bag',`<p>Chaîne Alliance, à partir du niveau 14. Le trajet traverse des zones plus dangereuses : voyager accompagné facilite les derniers passages.</p><ol><li><strong>Marche de l’Ouest · 37.5, 50.7</strong> — inspecter les débris brûlés de la ferme Alexston.</li><li><strong>Tarides · 46.4, 73.9</strong> — trouver les autres débris au sud de Taurajo, puis lire la note.</li><li><strong>Serres-Rocheuses · camp vers 40.6, 52.4</strong> — suivre le sentier près de la Retraite de Roche-Soleil, examiner les objets du camp et prendre la suite.</li><li><strong>Serres-Rocheuses · 39.6, 49.9</strong> — rejoindre le monticule au nord.</li><li><strong>Loch Modan · 49.5, 12.8</strong> — descendre prudemment sur la façade du barrage, côté Paluns, pour la figurine.</li><li><strong>Hautebrande · 87.3, 49.6</strong> — monter sur le chariot au mur de Thoradin ; rejoindre le sac du messager côté Arathi, <strong>22.5, 24.2</strong>.</li><li>Prendre la dernière quête et ouvrir la sacoche juste dessous pour recevoir le sac.</li></ol><p>${link(SOURCES.bag,'Guide illustré et récompenses intermédiaires ↗')}</p><button data-open-buffs>Ouvrir les timers du sac</button>`],

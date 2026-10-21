@@ -5,7 +5,7 @@ Mémo Alliance WoW Forever, livré le 21 octobre 2026. Reprise du projet fourni 
 ## Publier sur GitHub Pages
 
 1. Extraire le ZIP.
-2. Déposer son contenu à la racine du dépôt GitHub : index.html, style.css, data.js, app.js et .nojekyll doivent être au même niveau.
+2. Déposer son contenu à la racine du dépôt GitHub : index.html, style.css, data.js, app.js, le dossier assets/ et .nojekyll doivent être au même niveau.
 3. Dans le dépôt : Settings → Pages → Deploy from a branch.
 4. Choisir la branche contenant les fichiers (par exemple main), dossier /(root), puis Save.
 5. Attendre la publication ; GitHub affiche le lien du site dans Pages.
@@ -17,7 +17,7 @@ Documentation : https://docs.github.com/en/pages/getting-started-with-github-pag
 ## Utilisation
 
 - Les quatre rubriques et leurs guides démarrent fermés.
-- Buffs : 20 timers indépendants, durée modifiable, démarrage, pause, reprise, réinitialisation et alerte visuelle. Le son est optionnel. Les notifications système nécessitent l'autorisation du navigateur.
+- Buffs : 6 timers indépendants en liste, durée modifiable, démarrage, pause, reprise, réinitialisation et alerte visuelle. Le son est optionnel, avec volume réglable de 0 à 100 %, mémorisé. Les tests sonores mettent à jour une seule alerte. Les notifications système nécessitent l'autorisation du navigateur.
 - Chaque timer est manuel : la page ne lit pas les buffs du jeu. La durée réelle de l'infobulle fait foi.
 - Les échéances sont enregistrées avec une date absolue. Fermer la page ne met pas un timer en pause. À la réouverture, un timer arrivé à échéance signale sa fin une fois.
 - Les alertes ne peuvent pas se déclencher lorsque la page est fermée. La mise en veille, les onglets suspendus ou les restrictions audio peuvent les retarder. Après rechargement, une interaction peut être nécessaire pour réactiver le son.
@@ -30,7 +30,7 @@ Documentation : https://docs.github.com/en/pages/getting-started-with-github-pag
 
 Les plages sont des repères de progression, pas des niveaux minimums d'accès. Les valeurs Classic et les plages Forever publiées peuvent différer durant la bêta. Les nouveautés non encore testables sont signalées comme Forever ; Shen'dralas ne reçoit aucun niveau inventé.
 
-Pour les instances classiques, les liens Wowhead ouvrent la zone et son onglet Quêtes ; ouvrir ensuite la quête pour trouver son donneur. Ces pages Classic ne garantissent pas les changements de Forever. Les neuf nouvelles instances utilisent une recherche Wowhead Forever explicite, sans identifiant inventé. Les guides de référence sont liés dans chaque rubrique.
+Pour les instances classiques, les liens Wowhead ouvrent la zone et son onglet Quêtes ; ouvrir ensuite la quête pour trouver son donneur. Ces pages Classic ne garantissent pas les changements de Forever. Les nouvelles instances utilisent les guides Wowhead Forever : quatre guides dédiés (Thanes, Lordaeron, Excavation Site et Dalaran) et cinq liens vers leur passage du guide général, libellés Aperçu Wowhead. Les guides de référence sont liés dans chaque rubrique.
 
 Sources principales, consultées le 21 octobre 2026 :
 - https://www.icy-veins.com/wow-forever/dungeons-overview/
@@ -50,6 +50,6 @@ Sources principales, consultées le 21 octobre 2026 :
 - style.css : présentation responsive.
 - index.html : bannière et rubriques.
 
-Le site n'embarque aucune police, image distante ou bibliothèque tierce. La bannière est dessinée en CSS. Les liens externes s'ouvrent séparément.
+Le site n'embarque aucune police, image distante ou bibliothèque tierce. La bannière est une illustration générée, embarquée dans assets/azeroth-alliance.png. Voir ASSETS.md pour sa provenance. Les liens externes s'ouvrent séparément.
 
 Voir VERIFICATION.md pour les contrôles effectués et leurs limites.

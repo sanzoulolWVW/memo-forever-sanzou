@@ -25,10 +25,25 @@ const CAMP = [
  ['Alchimie','Mana Well','Régénération de mana'],['Forge','Sharpening Wheel','Force'],['Enchantement','Enchanted Lute','Armure, caractéristiques et résistances'],['Herboristerie','Incense Candle','Intelligence'],['Minage','Lodestone','Puissance d’attaque en mêlée'],['Dépeçage','Camp Chair','Critique'],['Couture','Faction Banner','Esprit'],['Secourisme','First Aid Kit','Endurance'],['Travail du cuir','Camp Tent','Réserve d’XP reposée · recharge horaire'],['Ingénierie','Reagent Bot','Service de vente de composants'],['Cuisine','Campfire / repas','Installation du feu et nourriture'],['Pêche','Fish Bowl','Caractéristiques +8 %']
 ];
 const BUFFS = [
- ['bag','Cozy Sleeping Bag',120,'+1 % XP par minute de repos, jusqu’à +3 %. Lancer après les 3 cumuls.'],['bag-rest','Sac · prendre les 3 cumuls',3,'Petit rappel pour se relever après trois minutes.'],['food','Nourriture · Bien nourri',15,'Nourriture cuisinée : bonus XP des monstres. Ajuster selon le plat.'],['camp-rest','Campement · installation du buff',1,'S’asseoir près du feu et des objets du camp.'],['tent','Tente · prochaine recharge',60,'Rappel de recharge, pas un compte à rebours de la barre bleue.'],['bag-cd','Sac · prochaine utilisation',60,'Recharge de l’objet après l’avoir déployé.'],
- ...CAMP.slice(0,8).map((x,i)=>['profession-'+i,x[0]+' · '+x[2],60,'Buff de campement. Déclencher après réception en jeu.']),
- ['fishing','Pêche · caractéristiques',60,'Buff du Fish Bowl. Ne se cumule pas avec Bénédiction des rois.'],['class','Buff de classe',30,'Durée libre selon le sort, son rang et les talents.'],['elixir','Élixir / potion',60,'Durée libre : recopier celle de l’infobulle.'],['weapon','Huile / pierre / poison',30,'Durée libre selon l’amélioration d’arme.'],['world','Buff mondial',120,'Durée libre selon le buff reçu.'],['custom','Mon rappel',10,'Un emplacement libre pour un autre buff ou une recharge.']
+ ['bag','Sleeping Bag',120],
+ ['food','Nourriture',15],
+ ['tent','Campement',60],
+ ['elixir','Élixir / potion',60],
+ ['weapon','Huile / pierre / poison',30],
+ ['custom','Rappel personnel',10]
 ];
+const OVERVIEW_GUIDE = 'https://www.wowhead.com/forever/guide/dungeons-overview-locations-details';
+const DUNGEON_GUIDES = {
+ 'Hall of Thanes': {url:'https://www.wowhead.com/forever/guide/hall-of-thanes-dungeon-overview-location-rewards',quests:'Every Quest for the Hall of Thanes'},
+ 'Ruins of Lordaeron': {url:'https://www.wowhead.com/forever/guide/ruins-of-lordaeron-dungeon-overview-location-rewards',quests:'Every Quest for the Ruins of Lordaeron'},
+ 'Excavation Site Wetlands': {url:'https://www.wowhead.com/forever/guide/excavation-site-wetlands-dungeon-overview-location-rewards',quests:'Every Quest in Excavation Site'},
+ 'City of Dalaran': {url:'https://www.wowhead.com/forever/guide/city-of-dalaran-dungeon-overview-location-rewards',quests:'Every Quest in City of Dalaran'},
+ 'The Drowned City': {heading:'The Drowned City Dungeon in Forever'},
+ 'Krol dok Stronghold': {heading:"Krol'dok Stronghold Dungeon in Forever"},
+ 'Alcaz Prison': {heading:'Alcaz Prison Dungeon in Forever'},
+ 'Blackmaw Hold': {heading:'Blackmaw Hold Dungeon in Forever'},
+ 'Shapers Terrace': {heading:'The Shapers Terrace Dungeon in Forever'}
+};
 // Sélection de départ, pas un catalogue exhaustif des livres. Noms abrégés pour faciliter la lecture.
 const BOOKS = [
  ['theocritus','Journal de Theocritus','Elwynn · tour d’Azora','65.4 70.1'],['antonidas','Autobiographie d’Antonidas','Forgefer · Hall des Explorateurs','76.3 10.8'],['rumi','Œuvres de Rumi','Loch Modan · auberge de Thelsamar','35.6 48.9'],['runes','Runes of the Sorcerer-Kings','Loch Modan · Mo’grosh','77.5 14.1'],['bewitch','Bewitchments and Glamours','Marche de l’Ouest · Ruisselune','45.4 70.5'],['dalaran','Dalaran Digest, vol. 23','Pins argentés · Moulin-de-l’Ambre','63.5 63.1'],['narthalas','Almanach de Nar’thalas','Sombrivage · Mathystra','59.6 22.2'],['goaz','Goaz Scrolls','Paluns · fouilles de Whelgar','33.6 47.9'],['baxtan','Baxtan · magie destructrice','Tarides · Cabestan','62.7 36.3'],['arcanic','Arcanic Systems Manual','Tarides · les Fenus','56.3 8.8'],['fury','Fury of the Land','Serres-Rocheuses · poste Totem-Sinistre','74.4 85.7'],['demons','Demons and You','Désolace · forteresse de Hache-Tonnerre','55.0 28.0']

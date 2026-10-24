@@ -109,7 +109,7 @@ function drawTable(kind,data){
  const rows=data.filter(x=>(!q||normalize(x.join(' ')).includes(q))&&(!n||(x[1]!==null&&x[1]<=n&&x[2]>=n))&&(kind!=='zone'||$('#horde').checked||!x[5].startsWith('Horde')));
  $('#'+kind+'-count').textContent=`${rows.length} / ${data.length}`;
  $('#'+kind+'-rows').innerHTML=rows.length?rows.map(x=>{
-  const base=x[4]?'https://www.wowhead.com/classic/zone='+x[4]:search(x[3]);
+  const base=x[4]?'https://www.wowhead.com/forever/zone='+x[4]:search(x[3]);
   let links=link(base,'Lien Wowhead ↗');
   if(kind==='dungeon'){
    const guide=DUNGEON_GUIDES[x[3]];
@@ -138,3 +138,16 @@ document.querySelectorAll('[data-source]').forEach(a=>{a.href=SOURCES[a.dataset.
 // Sections intentionally start closed, including after reloading an anchor URL.
 updateChecks();tick();save();
 
+
+document.querySelectorAll('[data-copy-command]').forEach(button=>{
+ button.addEventListener('click',async()=>{
+  const command=button.closest('li').querySelector('code').textContent;
+  const status=document.getElementById('graphics-copy-status');
+  try{
+   await navigator.clipboard.writeText(command);
+   status.textContent='Commande copiée : '+command;
+  }catch{
+   status.textContent='Copie automatique indisponible. Sélectionne la commande puis copie-la manuellement.';
+  }
+ });
+});

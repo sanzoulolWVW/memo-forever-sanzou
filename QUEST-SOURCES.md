@@ -1,34 +1,33 @@
-# Quêtes des instances — 21 octobre 2026
+# Dungeon quest data
 
-267 quêtes distinctes et 352 associations à 35 instances/ailes. Une quête présente dans plusieurs ailes partage sa case, via son identifiant numérique. Le catalogue inclut des suites et prérequis utiles aux donjons ; ce n’est pas uniquement une liste de quêtes réalisables entièrement à l’intérieur.
+Source snapshot: October 21, 2026. English localization: October 25, 2026.
+267 unique quests across 35 dungeon entries (352 associations).
 
-## Sources et attribution
+## Sources and attribution
 
-- [Forever Companion, API publique](https://forevercompanion.io/developers) : `/api/v1/quests?type=dungeon&limit=500`, 344 associations initiales, noms, factions, niveaux minimums, récompenses et prérequis. Données provenant de ForeverChanges, Wowhead, Zockify et contributions de joueurs. Réponse mise en cache pour cette version ; aucun appel à cette API au chargement du mémo.
-- [QuestieDB](https://github.com/Questie/QuestieDB/tree/78f730e9bf494fca0572616fc4c67fb61ae7e280), version Forever : données chargées avec leurs corrections et traces, via le lecteur officiel de la base. Donneurs, objets déclencheurs, positions, traductions disponibles, restrictions de classe, niveaux et récompenses complémentaires. Huit étapes/variantes manquantes des quatre premiers donjons Forever ajoutées depuis leurs catégories. Aucune instruction ou code applicatif de ces sources n’est exécuté par le site.
-- [Wowhead, quêtes de donjons](https://www.wowhead.com/forever/guide/dungeons/every-dungeon-quest-location), guides de Thanes, Lordaeron, Excavation Site et Dalaran : recoupement des noms et points de départ. Important Heirlooms est neutre selon le guide et Forever Companion, malgré un masque Alliance dans Questie.
-- [Important Heirlooms](https://www.wowhead.com/forever/quest=96403) : partage confirmé. [The Treaty of Understanding](https://www.wowhead.com/forever/quest=98423) : non partageable, départ dans le Reliquaire des rois.
+- [Forever Companion public API](https://forevercompanion.io/developers): /api/v1/quests?type=dungeon&limit=500. Initial dungeon associations, English quest names, factions, minimum levels, rewards and prerequisites; aggregated from ForeverChanges, Wowhead, Zockify and player contributions. Cached data; no runtime API requests.
+- [QuestieDB Forever](https://github.com/Questie/QuestieDB/tree/78f730e9bf494fca0572616fc4c67fb61ae7e280): givers, starting items, locations, class restrictions, rewards and original English entity names. Eight missing steps/variants for the first four new Forever dungeons were added from their categories.
+- [Wowhead dungeon quests](https://www.wowhead.com/forever/guide/dungeons/every-dungeon-quest-location) and dedicated guides for Thanes, Lordaeron, Excavation Site and Dalaran: cross-checks of names and starting locations.
+- [Important Heirlooms](https://www.wowhead.com/forever/quest=96403): neutral and shareable, despite an Alliance mask in Questie. [The Treaty of Understanding](https://www.wowhead.com/forever/quest=98423): not shareable; starts in the Reliquary of Kings.
 
-Les noms de jeu, niveaux, identifiants, coordonnées et associations sont des données factuelles. Les descriptions narratives des quêtes et les textes des guides ne sont pas reproduits. Attribution affichée également dans le site.
+Only factual names, IDs, levels, coordinates and associations are included. Narrative quest descriptions and guide prose are not reproduced. No source application code runs on the website.
 
-## Partage et données absentes
+## Missing data and sharing
 
-Le drapeau Questie SHARABLE (= 8) confirme « Oui ». Une valeur absente/zéro ne permet pas de conclure « Non » : le site affiche « À vérifier » sauf confirmation explicite. Le partage exige de satisfaire les prérequis, la faction, la classe et le niveau. Les données des sources sont susceptibles de changer pendant la bêta.
+Questie SHARABLE (8) confirms Yes. Missing or zero flags do not prove No: display Unconfirmed unless explicitly verified. Sharing still requires meeting faction, class, level and prerequisite restrictions.
 
-Krol’dok Stronghold, Alcaz Prison, Blackmaw Hold et Shaper’s Terrace n’ont pas de quêtes documentées dans le catalogue consulté. La page affiche ce manque, sans prétendre qu’aucune quête n’existe dans le jeu. Les 267 quêtes ont chacune un identifiant et un lien Wowhead. Deux entrées sans identifiant dans l’API ont été raccordées à Questie : The Test of Righteousness (1654, étape de collecte), The Orb of Soran’ruk (1740).
+Krol’dok Stronghold, Alcaz Prison, Blackmaw Hold and Shaper’s Terrace have no documented quests in this snapshot; this does not mean no quests exist in game. All 267 quests have an ID and a Forever Wowhead link. Two API records without IDs were matched to Questie: The Test of Righteousness (1654, collection step) and The Orb of Soran’ruk (1740).
 
-Quand aucune récompense en objet n’est renseignée, ne pas en déduire l’absence de gains : or, expérience et objets peuvent être incomplets. Les objets associés ne sont pas nécessairement tous reçus ; un choix est signalé quand la source l’indique.
+Missing item rewards do not imply no rewards: gold, XP and items may be incomplete. Choice rewards are marked when documented.
 
-## Cartes et coordonnées
+## Maps and coordinates
 
-Fonds et icônes distants : Wowhead/ZAM, illustrations de Blizzard. 35 fonds Classic vérifiés disponibles au moment du contrôle. Chargement uniquement quand la fiche est ouverte ; repli explicite si une image échoue.
+Remote maps and icons: Wowhead/ZAM, Blizzard artwork. The 35 Classic map backgrounds were checked during the original data validation. Images load when quest details open, with a fallback if unavailable.
 
-Coordonnées de la commande TomTom : pourcentages Forever fournis par Questie, avec UiMapID Forever (`/way #ID x y nom`). Le point est une position effectivement relevée, choisie près du centre des relevés lorsqu’un PNJ en a plusieurs. Il ne constitue pas une garantie que le PNJ ne bouge jamais.
+TomTom commands preserve observed Forever coordinates and Forever UiMapIDs: /way #ID x y name. For multiple observations, one actual recorded point near the cluster center is selected. NPCs may move.
 
-Le fond Classic peut avoir un cadrage différent. Les coefficients du manifeste `data/Forever/conversion.json` servent à convertir le repère vers Classic : `(coordonnéeForever - offset) / scale`. La commande TomTom conserve les coordonnées Forever. Les cartes sont explicitement étiquetées comme indicatives ; aucun fond ou point n’est inventé pour les intérieurs et zones inconnus. Aucun trajet de navigation n’est calculé.
+Markers are converted to Classic map framing using QuestieDB data/Forever/conversion.json: (Forever coordinate - offset) / scale. TomTom coordinates are not converted. Maps are labeled approximate; unknown interiors do not receive invented backgrounds or points. No navigation route is calculated.
 
-## Sauvegarde et publication
+## Persistence
 
-Même clé de stockage que la version précédente : les objectifs, livres et timers conservés restent enregistrés. Les timers élixir et arme sont retirés. Le bouton À FAIRE « Tout décocher » conserve les quêtes de donjons. Les cases ne se synchronisent pas entre navigateurs ou adresses.
-
-Site statique prêt pour GitHub Pages. Tous les fichiers à la racine du ZIP, avec le dossier assets/, doivent être déposés à la racine du dépôt. Ne pas déposer seulement index.html.
+The existing browser storage key and quest IDs are unchanged. Shared quests use the same checkbox across wings. Uncheck all in TO DO preserves dungeon quest checks. Translation preserves timers, objectives and book progress on the same site address.

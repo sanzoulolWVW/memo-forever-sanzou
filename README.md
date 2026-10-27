@@ -36,3 +36,14 @@ Beta data may be incomplete. Dungeon level ranges are recommendations, not entry
 - index.html, style.css, instances.css: page structure and presentation.
 
 All quest, item, NPC and zone database links use the English Wowhead Forever base: https://www.wowhead.com/forever/.
+
+## Version 8 — quest details and TO DO maps (October 27, 2026)
+- 264 of 267 dungeon quests now include sourced objective text. Three unavailable objectives remain explicitly undocumented.
+- Reward tooltips from 293 distinct Forever Companion item records; two item endpoints (6898 and 15109) returned 404 and retain an explicit missing-stats fallback. Tooltip text is escaped, never inserted as HTML.
+- Rechecked all existing starter records against the updated QuestieDB Forever dataset. No previously unmapped quest gained reliable coordinates; added room directions for documented interior NPCs instead of invented map pins.
+- Two additional sharing confirmations: An Ancient Grudge (96395) and A Frightened Request (92401), from their Wowhead Forever quick facts. 121 sharing statuses remain unconfirmed; Classic status is not substituted.
+- 20 TO DO map disclosures and copyable TomTom commands: 12 books, Garion, 7 Sleeping Bag waypoints. 18 use recorded Forever positions; dam/cart guide references are explicitly unverified.
+- Maps use Classic image backgrounds. Recorded Forever coordinates are converted for the marker; TomTom retains Forever coordinates and uiMap IDs.
+- Stable completion IDs and existing saved progress are preserved. Everything remains in English.
+
+Publish by extracting the v8 ZIP and uploading its contents to the repository root, replacing the existing files. Include the two new JavaScript files. GitHub Pages remains main / root.

@@ -31,3 +31,13 @@ Markers are converted to Classic map framing using QuestieDB data/Forever/conver
 ## Persistence
 
 The existing browser storage key and quest IDs are unchanged. Shared quests use the same checkbox across wings. Uncheck all in TO DO preserves dungeon quest checks. Translation preserves timers, objectives and book progress on the same site address.
+
+## V8 sources — reviewed 2026-10-27
+- QuestieDB Forever: https://github.com/Questie/QuestieDB (revision 7901fee). Objectives, starters, library-book object drops, observed coordinates, and map geometry conversion.
+- Forever Companion: https://forevercompanion.io/developers — public dungeon quest and item-detail APIs. Static cached tooltip text, attribution rendered beside rewards. Data date 2026-10-27. Any objective carried only as a Classic reference is visibly labelled.
+- Sharing: https://www.wowhead.com/forever/quest=96395/an-ancient-grudge and https://www.wowhead.com/forever/quest=92401/a-frightened-request explicitly say Sharable. Other unknown values stay null.
+- Interior directions: https://www.wowhead.com/forever/guide/dungeons/every-dungeon-quest-location
+- Gordok sample interaction: https://www.wowhead.com/forever/quest=5528/the-gordok-taste-test
+- Map backgrounds: https://wow.zamimg.com/images/wow/classic/maps/enus/normal/ — existing 35 backgrounds plus Elwynn (12) and Stonetalon (406), checked HTTP 200 image/jpeg.
+
+Remaining limits: 77 quests have no recorded pickup coordinates; no fabricated pins are shown. 121 sharing values lack Forever evidence. Three quest objectives have no reliable source. Two reward item endpoints returned 404. The Sleeping Bag dam and wall-cart waypoints still use labelled guide coordinates.

@@ -11,3 +11,11 @@
 - Existing storage key and task/book/quest IDs preserved. Asset cache version increased to 7.
 
 This is a static GitHub Pages package. Publication still requires uploading the package contents to the GitHub repository.
+
+## V8 validation
+- JavaScript syntax checks passed for modified runtime files.
+- Dataset assertions passed: 35 dungeons, 267 unique quests, 352 associations, stable quest names/minimum levels/group membership; 37 valid map backgrounds.
+- All 20 TO DO locations have bounded map coordinates and explicit uiMap IDs; 18 recorded Forever positions and 2 guide-only references.
+- Actual browser: Important Heirlooms displays objective, Dwarven Tome (+1 Spirit / +3 Spell Power), gloves, Ironforge map and TomTom command. Westfall TO DO map opens and copy status confirms success.
+- 390px viewport checked: no horizontal page overflow. Existing sections begin closed.
+- Remaining unverified data is documented in QUEST-SOURCES.md, not silently filled from Classic.
